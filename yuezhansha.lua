@@ -101,6 +101,7 @@ Fk:loadTranslationTable{
 }
 -- ----------------------------------------------------------------------------------------------------------------------------------
 -- 本条二亚  @贞酱
+
 local yz_erya = General:new(extension, "yz_erya", "god", 4,4,General.Female)
 -- 二亚信息翻译
 Fk:loadTranslationTable{
@@ -116,16 +117,6 @@ Fk:loadTranslationTable{
 -- erya:addSkill()
 -- ---------------------------------------------------------------------------------------------------------------------------------
 -- 时崎狂三 
--- 时影	你的准备阶段，你可以进行一次判定，若结果为:
--- 		黑色，则你将本次判定牌置于武将牌上,称为「影」，然后你可以重复此流程；
--- 		红色，你获得此判定牌。
--- 		你的出牌阶段内，你可以移去任意数量的「影」并获得x点攻击距离,本回合内你的下一次【杀】可以额外选择至多x-1名角色为目标，
---    若你选择的目标数量不大于x－3，则你令此【杀】造成的伤害＋1且不可被【闪】响应(x为你弃置的「影」的数量) ，
---    此【杀】结算结束后，你可以从弃牌堆获得一张本回合弃置的「影」牌。
-		
--- 倒流	限定技，当你的武将牌上「影」数量不小于十二时，你可以移去12枚「影」，
--- 若如此做，你令一名角色体力上限+1，然后将体力恢复至上限，并将手牌摸至体力上限，然后你对一名角色造成三点伤害。
-
 local yz_kuangsan=General:new(extension,"yz_kuangsan","god",3,4,General.Female)
 Fk:loadTranslationTable{
   ["yz_kuangsan"] = "时崎狂三",
@@ -226,11 +217,8 @@ local yz_kuangsan_shiying_sha=fk.CreateTriggerSkill{
   name="#yz_kuangsan_shiying_sha",
   events={fk.AfterCardTargetDeclared},
   can_trigger=function (self, event, target, player, data)
-    -- local room=player.room
-    -- local otherPlayersIds=table.map(room:getOtherPlayers(player), Util.IdMapper)
     return player:hasSkill(self.name)
            and target==player
-          --  and #otherPlayersIds > 1
            and data.card.trueName=="slash"
            and player:getMark("@yz_dan")> 0
   end,
@@ -298,7 +286,7 @@ local yz_kuangsan_daoliu=fk.CreateTriggerSkill{
     local to=room:getPlayerById(toId[1])
     local toCardsNum=#to:getCardIds()
     -- 若如此做，你令一名角色体力上限+1，然后将体力恢复至上限，并将手牌摸至体力上限，然后你对一名角色造成三点伤害。
-    to.maxHp=to.maxHp+1
+    room:changeMaxHp(to,1)
     local maxHP=to.maxHp
     room:recover{
         who =to ,
@@ -328,7 +316,6 @@ yz_kuangsan:addSkill(yz_kuangsan_daoliu)
 yz_kuangsan:addSkill(yz_kuangsan_shiying)
 -- ---------------------------------------------------------------------------------------------------------------------------------
 -- 四系乃
--- 双生	出牌阶段，你可以失去一点体力，若如此做，你令一名角色回复一点体力。 
 local yz_siminai=General:new(extension,"yz_siminai","god",3,3,General.Female)
 Fk:loadTranslationTable{
   ["yz_siminai"] = "氷芽川四糸乃",
@@ -343,12 +330,15 @@ Fk:loadTranslationTable{
 
   ["yz_siminai_bingjie"]="冰洁",
   [":yz_siminai_bingjie"]="出牌阶段限一次，若你的武将牌正面朝上，你可以弃置两张牌并将其中一张交给一名角色，随后翻面，"..
-                          "若如此做，你回复一点体力并选择一项：1、令一名未以此法翻面过的其他角色角色翻面；摸两张牌并跳过本回合的弃牌阶段。",
+                          "若如此做，你回复一点体力并选择一项：<br>"..
+                          "1、令一名未以此法翻面过的其他角色角色翻面；<br>"..
+                          "2、摸两张牌并跳过本回合的弃牌阶段。",
   ["yz_siminai_bingjie_turnover"]="选择一名未翻面角色翻面",
   ["yz_siminai_bingjie_getcards"]="获得两张牌并跳过弃牌阶段",
 
   ["yz_siminai_dongkai"]="冻铠",
-  [":yz_siminai_dongkai"]="锁定技，当你成为其他角色使用普通【杀】、【决斗】、【南蛮入侵】、【万箭齐发】的目标时，若你的武将牌背面朝上，取消之。当你受到火属性伤害时，若你的武将牌背面朝上，此伤害+1。",
+  [":yz_siminai_dongkai"]="锁定技，当你成为其他角色使用普通【杀】、【决斗】、【南蛮入侵】、【万箭齐发】的目标时，若你的武将牌背面朝上，取消之。"..
+                          "当你受到火属性伤害时，若你的武将牌背面朝上，此伤害+1。",
 }
 local yz_siminai_shuangsheng=fk.CreateTriggerSkill{
   name="yz_siminai_shuangsheng",
@@ -378,9 +368,6 @@ local yz_siminai_shuangsheng=fk.CreateTriggerSkill{
     end
   end
 }
--- 冰洁	出牌阶段限一次，若你的武将牌正面朝上，你可以弃置两张牌并将其中一张交给一名角色，随后翻面，若如此做，你回复一点体力并选择一项：
-		-- 1、令一名未以此法翻面过的其他角色角色翻面；
-		-- 2、摸两张牌并跳过本回合的弃牌阶段。
 local yz_siminai_bingjie=fk.CreateTriggerSkill{
   name="yz_siminai_bingjie",
   events={fk.EventPhaseStart},
@@ -391,7 +378,6 @@ local yz_siminai_bingjie=fk.CreateTriggerSkill{
            and player:usedSkillTimes(self.name, Player.HistoryTurn) == 0
            and #player:getCardIds("he") > 2
   end,
-  -- priority=0,
   on_use =function (self, event, target, player, data)
     local room = player.room
     if player.faceup then
@@ -404,9 +390,6 @@ local yz_siminai_bingjie=fk.CreateTriggerSkill{
       local to= room:getPlayerById(toId[1])
       room:throwCard(cardIds,self.name,player,player)
       room:obtainCard(to,sendCardId,true,event,player.id,self.name)
-      -- local throwCardId=sendCardId[1]
-      -- dbg()
-      -- table.remove(cardIds,sendCardId[1])
       player:turnOver()
       room:recover{
         who = player ,
@@ -428,16 +411,12 @@ local yz_siminai_bingjie=fk.CreateTriggerSkill{
       room:getPlayerById(turnPlayerId[1]):turnOver()
       elseif selected == "yz_siminai_bingjie_getcards" then 
           player:drawCards(2)
-          -- 跳过弃牌阶段
           player:skip(Player.Discard)
-          -- room:askForDiscard(player,0,0,false,self.name,false,".","",true)
           return true
       end
     end
   end
 }
--- 冻铠	锁定技，当你成为其他角色使用普通【杀】、【决斗】、【南蛮入侵】、【万箭齐发】的目标时，若你的武将牌背面朝上，取消之。
--- 当你受到火属性伤害时，若你的武将牌背面朝上，此伤害+1。
 local yz_siminai_dongkai=fk.CreateTriggerSkill{
   name="yz_siminai_dongkai",
   frequency = Skill.Compulsory,
@@ -445,13 +424,11 @@ local yz_siminai_dongkai=fk.CreateTriggerSkill{
   can_trigger =function (self, event, target, player, data)
     return player:hasSkill(self.name) 
            and target ~= player
-          --  and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
            and (data.card.name == "slash" or data.card.name=="duel" 
            or data.card.name=="savage_assault" or data.card.name=="archery_attack")         
   end,
   on_use =function (self, event, target, player, data)
     if not player.faceup  then
-      -- table.insert(data.nullifiedTargets,player.id) 
       AimGroup:cancelTarget(data, player.id)
     end
   end
@@ -489,30 +466,34 @@ Fk:loadTranslationTable{
   ["cv:yz_qinli"] = "不知道",
   -- 画师
   ["illustrator:yz_qinli"] = "不是我",
-
   ["yz_qinli_yanmo"] = "炎魔",
   [":yz_qinli_yanmo"] = "锁定技，你造成的伤害全部视为火焰伤害。",
   ["#yz_qinlii_msg"] = " %to 【炎魔】造成伤害为火元素伤害 ",
-
   ["yz_qinli_pohuai"] = "破坏",
-  [":yz_qinli_pohuai"] = "破坏	锁定技，当你使用牌指定唯一目标时：1、若该目标与你距离为1且你拥有技能【灼炮】，你失去技能【灼炮】并获得技能【炽斧】；2、若该目标与你的距离大于1且你拥有技能【炽斧】，你失去技能【炽斧】并获得技能【灼炮】。",
+  [":yz_qinli_pohuai"] = "破坏	锁定技，当你使用牌指定唯一目标时：<br>"..
+                         "1、若该目标与你距离为1且你拥有技能【灼炮】，你失去技能【灼炮】并获得技能【炽斧】；<br>"..
+                         "2、若该目标与你的距离大于1且你拥有技能【炽斧】，你失去技能【炽斧】并获得技能【灼炮】。",
   ["#yz_qinli_pohuai_fu"] = " %to 【破坏】切换技能为【炽斧】",
   ["#yz_qinli_pohuai_pao"] = " %to 【破坏】切换技能为【灼炮】",
 
   ["yz_qinli_chifu"] = "炽斧",
-  [":yz_qinli_chifu"] = "锁定技：你的【杀】、【决斗】和【火攻】无视防具且不能被响应。每回合限一次，当你使用火【杀】和【火攻】造成伤害时，你可以选择回复一点体力或摸两张牌。",
+  ["#yz_qinli_chifu_plus"]="炽斧·斩",
+  [":yz_qinli_chifu"] = "锁定技：你的【杀】、【决斗】和【火攻】无视防具且不能被响应。"..
+                        "每回合限一次，当你使用火【杀】和【火攻】造成伤害时，你可以选择回复一点体力或摸两张牌。",
   ["yz_qinli_chifu_choose_tip"]="炽斧造成伤害后选择",
   ["yz_qinli_chifu_choose_hp"]="回复1血",
   ["yz_qinli_chifu_choose_card"]="获得两张牌",
-  -- ["#yz_qinli_chifu"] = " %to 【破坏】切换技能为【炽斧】",
 
   ["yz_qinli_zhuopao"] = "灼炮",
-  [":yz_qinli_zhuopao"] = "锁定技：当你使用牌指定非唯一目标时，每回合限一次，你可以在此牌结算完成后获得之，若如此做，你失去一点体力。你使用的【火】杀和【火攻】可以额外指定一个目标。",
-  -- ["#yz_qinli_chifu"] = " %to 【破坏】切换技能为【炽斧】",
-
+  ["#yz_qinli_zhuopao_card"] = "灼炮",
+  ["#yz_qinli_zhuopao_card_get"]="灼炮·回收",
+  [":yz_qinli_zhuopao"] = "锁定技：当你使用牌指定非唯一目标时，每回合限一次，你可以在此牌结算完成后获得之，"..
+                          "若如此做，你失去一点体力。你使用的【火】杀和【火攻】可以额外指定一个目标。",
+  ["@yz_qinli_fu"]="炽斧",
+  ["@yz_qinli_pao"]="灼炮",
+  ["@yz_qinli_pao_mark"]="灼炮·收"
 
 }
--- 技能  炎魔  平A变火元素伤害
 local yz_qinli_yanmo=fk.CreateTriggerSkill{
   name="yz_qinli_yanmo",
   anim_type = "defensive",
@@ -525,7 +506,6 @@ local yz_qinli_yanmo=fk.CreateTriggerSkill{
     local msg={}
     local room=player.room
     data.damageType=fk.FireDamage
-
       -- 额外一次伤害
       --  room:damage({
       --   from = player,
@@ -535,12 +515,9 @@ local yz_qinli_yanmo=fk.CreateTriggerSkill{
       --   skillName = self.name
       -- })
       
- 
       room:notifySkillInvoked(player,"yz_qinli_yanmo","offensive",target)
   end
 }
--- 破坏	锁定技，当你使用牌指定唯一目标时：1、若该目标与你距离为1且你拥有技能【灼炮】，你失去技能【灼炮】并获得技能【炽斧】；
---                                      2、若该目标与你的距离大于1且你拥有技能【炽斧】，你失去技能【炽斧】并获得技能【灼炮】。
 local yz_qinli_pohuai=fk.CreateTriggerSkill{
   name="yz_qinli_pohuai",
   anim_type = "offensive",
@@ -551,56 +528,49 @@ local yz_qinli_pohuai=fk.CreateTriggerSkill{
   end,
   on_use =function (self, event, target, player, data)
     local room=player.room
-    -- dbg()
     if data.tos and #data.tos[1]==1 and data.tos[1][1] ~= data.from then
       local player2=room:getPlayerById(data.tos[1][1])
-      if player:distanceTo(player2,"both",true) == 1 and player:hasSkill("yz_qinli_zhuopao") then
-           room:handleAddLoseSkills(player, "-yz_qinli_zhuopao", "yz_qinli_pohuai", true)
-
-          --  room:notifySkillInvoked(player,"yz_qinli_chifu","fire",player2)
-           room:handleAddLoseSkills(player, "yz_qinli_chifu", "yz_qinli_pohuai", true)
-           print("失去炮，获得斧")
-      elseif player:distanceTo(player2,"both",true) > 1 and player:hasSkill("yz_qinli_chifu") then
-            room:handleAddLoseSkills(player, "-yz_qinli_chifu", "yz_qinli_pohuai", true)
-            room:handleAddLoseSkills(player, "yz_qinli_zhuopao", "yz_qinli_pohuai", true)
-            print("失去斧，获得炮")
+      if player:distanceTo(player2,"both",true) == 1   then
+          room:setPlayerMark(player,"@yz_qinli_fu",1)
+          room:setPlayerMark(player,"@yz_qinli_pao",0)
+      elseif player:distanceTo(player2,"both",true) > 1  then
+        room:setPlayerMark(player,"@yz_qinli_pao",1)
+        room:setPlayerMark(player,"@yz_qinli_fu",0)
       end
     end
   end
   
 }
--- 炽斧	锁定技：你的【杀】、【决斗】和【火攻】无视防具且不能被响应。
--- 每回合限一次，当你使用火【杀】和【火攻】造成伤害时，你可以选择回复一点体力或摸两张牌。
--- local yz_qinli_chifu_plus=fk.CreateTriggerSkill{
---   name="yz_qinli_chifu_plus",
---   frequency=Skill.Compulsory,
---   -- events={fk.AfterPhaseEnd},
---   can_trigger=function (self, event, target, player, data)
---     return player:hasSkill(self.name) 
---     and target ==player 
---     and (data.card.name == "fire__slash" or data.card.name =="fire_attack" and data.card.name == "duel")
---   end,
---   on_use= function (self, event, target, player, data)
---     data.disresponsive = true
---   end
-  
--- }
+local yz_qinli_chifu_plus=fk.CreateTriggerSkill{
+  name="#yz_qinli_chifu_plus",
+  frequency=Skill.Compulsory,
+  events={fk.TargetSpecified},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name) 
+          and target ==player 
+          and player:getMark("@yz_qinli_fu")>0
+          and (data.card.name == "fire__slash" or data.card.name =="fire_attack" and data.card.name == "duel")
+  end,
+  on_use= function (self, event, target, player, data)
+    -- data.disresponsive = true
+    data.disresponsiveList = table.map(player.room.alive_players, Util.IdMapper)
+    player:addQinggangTag(data)
+  end
+}
 local yz_qinli_chifu=fk.CreateTriggerSkill{
   name="yz_qinli_chifu",
   frequency=Skill.Compulsory,
   events={fk.DamageCaused},
-  can_use =function (self,player)
-    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
-  end,
   can_trigger=function (self, event, target, player, data)
-    return player:hasSkill(self.name) 
-    and target==player 
-    and (data.card.name == "fire__slash" or data.card.name =="fire_attack")
+    return player:usedSkillTimes(self.name, Player.HistoryTurn) == 0
+           and player:hasSkill(self.name)
+           and player:getMark("@yz_qinli_fu")>0
+           and data.card
+           and target==player
+           and (data.card.name == "fire__slash" or data.card.name =="fire_attack")
   end,
   on_use=function (self, event, target, player, data)
     local room=player.room
-    print("使用炽斧")
-    -- dbg()
     local choose={"yz_qinli_chifu_choose_hp","yz_qinli_chifu_choose_card"}
     local choices = room:askForChoice(player,choose,self.name,"yz_qinli_chifu_choose_tip",false,choose)
     if choices=="yz_qinli_chifu_choose_hp" then
@@ -615,48 +585,73 @@ local yz_qinli_chifu=fk.CreateTriggerSkill{
     end
   end
 }
-
-
--- 灼炮	锁定技：当你使用牌指定非唯一目标时，每回合限一次，你可以在此牌结算完成后获得之，若如此做，你失去一点体力。
--- 你使用的【火】杀和【火攻】可以额外指定一个目标。
 local yz_qinli_zhuopao=fk.CreateTargetModSkill{
   name="yz_qinli_zhuopao",
   frequency=Skill.Compulsory,
   events = {fk.TargetSpecifying},
-  can_use =function (self,player)
-    return player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
-  end,
   can_trigger=function (self, event, target, player, data)
-    return player:hasSkill(self.name) and target==player and (data.card.name == "fire__slash" or data.card.name =="fire_attack")
+    return player:hasSkill(self.name) 
+          and target==player 
+          and player:getMark("@yz_qinli_pao")>0
+          and (data.card.name == "fire__slash" or data.card.name =="fire_attack")
   end,
   on_use =function (self, event, target, player, data)
     local room = player.room
-    local tos = TargetGroup:getRealTargets(data.tos)
-    local targets = table.map(table.filter(room.alive_players, function(p)
-      return p ~= player and not table.contains(tos, p.id) end), Util.IdMapper)
-    targets = room:askForChoosePlayers(player, targets, 1, 1, "额外选择一个目标", "yz_qinli_zhuopao", true)
+    local targets = room:getUseExtraTargets(data)
     if #targets > 0 then
-      room:damage{
-        from = player,
-        to = room:getPlayerById(targets[1]),
-        damage = 1,
-        skillName = "yz_qinli_zhuopao",
-      }
+      local tos = room:askForChoosePlayers(player, targets, 1, 1,""..data.card:toLogString(), self.name, true)
+      if #tos > 0 then
+        table.forEach(tos, function (id)
+          table.insert(data.tos, {id})
+        end)
+      end
     end
   end
 }
--- yz_qinli_chifu:addRelatedSkill(yz_qinli_chifu_plus)
-
+local yz_qinli_zhuopao_card=fk.CreateTriggerSkill{
+  name="#yz_qinli_zhuopao_card",
+  frequency=Skill.Compulsory,
+  events={fk.TargetSpecified},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name) 
+          and target==player 
+          and player:usedSkillTimes(self.name, Player.HistoryTurn) == 0
+          and player:getMark("@yz_qinli_pao")>0
+          and #data.tos[1] == 1
+  end,
+  on_cost=function (self, event, target, player, data)
+    return true
+  end,
+  on_use=function (self, event, target, player, data)
+    local room =player.room
+    room:setCardMark(data.card,"@yz_qinli_pao_mark",1)
+  end
+}
+local yz_qinli_zhuopao_card_get=fk.CreateTriggerSkill{
+  name="#yz_qinli_zhuopao_card_get",
+  frequency=Skill.Compulsory,
+  events={fk.CardEffectFinished},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name) 
+           and player:getMark("@yz_qinli_pao")>0
+           and data.card:getMark("@yz_qinli_pao_mark") > 0
+  end,
+  on_use=function (self, event, target, player, data)
+    local room=player.room
+    room:obtainCard(player,data.card,true)
+    room:loseHp(player,1,self.name)
+  end
+  
+}
+yz_qinli_chifu:addRelatedSkill(yz_qinli_chifu_plus)
+yz_qinli_zhuopao:addRelatedSkill(yz_qinli_zhuopao_card)
+yz_qinli_zhuopao:addRelatedSkill(yz_qinli_zhuopao_card_get)
 yz_qinli:addSkill(yz_qinli_yanmo)
 yz_qinli:addSkill(yz_qinli_pohuai)
 yz_qinli:addSkill(yz_qinli_chifu)
 yz_qinli:addSkill(yz_qinli_zhuopao)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 星宫六喰（can）
--- 闭锁	当你成为其他角色使用基本牌或锦囊牌的的目标后，你可以失去一点体力，令此牌对你无效，然后你令该角色的技能失效直到其下回合开始。
--- 封解	每回合限一次，当你使用【杀】造成伤害后，你可以令其获得一枚「封」标记，除你和其以外的角色对拥有「封」标记的角色造成伤害时，你令该伤害-1。
--- 当拥有「封」标记造成伤害后或回复体力后，你移除该角色武将牌上的「封」标记。你的出牌阶段，你可以场上的「封」标记。
-
 local yz_liucan=General:new(extension,"yz_liucan","god",3,3,General.Female)
 Fk:loadTranslationTable{
   ["yz_liucan"] = "星宫六喰",
@@ -754,7 +749,6 @@ local yz_liucan_fengjie_lost_jie=fk.CreateTriggerSkill{
     return player:hasSkill(self.name)
            and target ~=player
            and target:getMark("@yz_liucan_jie") > 0
-
   end,
   on_use=function (self, event, target, player, data)
     local room=player.room
@@ -770,7 +764,6 @@ yz_liucan:addSkill(yz_liucan_fengjie)
 
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 镜野七罪
--- 赝造	当你使用基本牌或非延时性锦囊牌指定目标后，你可以失去一点体力或弃一张牌，若如此做，其他角色不能使用或打出牌响应你使用的牌。
 -- 万化	每轮限一次，你可以选择一名角色，然后你声明其武将牌上的一个技能（限定技、觉醒技、主公技除外），你可以选择一项：
 -- 		1、直到你的下回合开始时，你视为拥有此技能，且性别和势力视为与其相同；
 -- 		2、失去一点体力并弃置2张不同颜色的牌，若如此做，你的下个回合开始时，你获得此技能。
@@ -788,7 +781,7 @@ Fk:loadTranslationTable{
   ["yz_qizui_yanzao_lostHp"]="失去一点体力",
   ["yz_qizui_yanzao_lostCard"]="弃一张牌",
   ["yz_qizui_wanhua"]="万化",
-  [":yz_qizui_wanhau"]="每轮限一次，你可以选择一名角色，然后你声明其武将牌上的一个技能（限定技、觉醒技、主公技除外），你可以选择一项：<br>"..
+  [":yz_qizui_wanhua"]="每轮限一次，你可以选择一名角色，然后你声明其武将牌上的一个技能（限定技、觉醒技、主公技除外），你可以选择一项：<br>"..
                        "1、直到你的下回合开始时，你视为拥有此技能，且性别和势力视为与其相同；<br>"..
                        "2、失去一点体力并弃置2张不同颜色的牌，若如此做，你的下个回合开始时，你获得此技能。",
   ["yz_qizui_wanhau_choose1"]="其一",
@@ -886,7 +879,6 @@ local yz_qizui_wanhua=fk.CreateActiveSkill{
 }
 local yz_qizui_beishui=fk.CreateTriggerSkill{
     name="yz_qizui_beishui",
-    -- frequency=Skill.Limited,
     events={fk.GameStart},
     can_trigger=function (self, event, target, player, data)
       return player:hasSkill(self.name)
@@ -901,16 +893,14 @@ yz_qizui:addSkill(yz_qizui_yanzao)
 yz_qizui:addSkill(yz_qizui_wanhua)
 yz_qizui:addSkill(yz_qizui_beishui)
 -------------------------------------------------------------------------------------------------------------------------------------
--- 分离	锁定技，游戏开始时，或每局游戏限一次，你死亡时，你选择你未选择过的一项：
--- 		1、用八舞耶俱矢替换你的武将牌；
--- 		2、用八舞夕弦替换你的武将牌。
--- 		然后你将你的体力回复至体力上限复原并重置你的武将牌。
-
 -- 创建共有技能【分离】
 Fk:loadTranslationTable{
   -- 技能翻译
   ["yz_bawu_fenli"]="分离",
-  [":yz_bawu_fenli"]="锁定技，游戏开始时，或每局游戏限一次，你死亡时，你选择你未选择过的一项: \n 1、用八舞耶俱矢替换你的武将牌\n2、用八舞夕弦替换你的武将牌。\n然后你将你的体力回复至体力上限复原并重置你的武将牌",
+  [":yz_bawu_fenli"]="锁定技，游戏开始时，或每局游戏限一次，你死亡时，你选择你未选择过的一项: <br>"..
+                     " 1、用八舞耶俱矢替换你的武将牌<br>"..
+                     "2、用八舞夕弦替换你的武将牌。<br>"..
+                     "然后你将你的体力回复至体力上限复原并重置你的武将牌",
   ["yz_bawu_fenli_choose_xixuan"]="是否替换为夕弦",
   ["yz_bawu_fenli_choose_yejushi"]="是否替换为耶俱矢",
   ["yz_bawu_fenli_choose_Cancel"]="取消",
@@ -931,7 +921,6 @@ local yz_bawu_fenli=fk.CreateTriggerSkill{
   on_use =function (self, event, target, player, data)
     local room = player.room
     local hero= player.general
-    -- print(hero)
     if hero == "yz_yejushi" then
       local choose={"yz_bawu_fenli_choose_xixuan","yz_bawu_fenli_choose_Cancel"}
       local choices = room:askForChoice(player,choose,self.name,"yz_bawu_fenli",false,choose)
@@ -947,15 +936,11 @@ local yz_bawu_fenli=fk.CreateTriggerSkill{
     elseif hero == "yz_jejushi_xixuan" then
       local choose={"yz_bawu_fenli_choose_xixuan","yz_bawu_fenli_choose_yejushi"}
       local choices = room:askForChoice(player,choose,self.name,"yz_bawu_fenli",false,choose)
-        -- print(choices)
       if choices == "yz_bawu_fenli_choose_xixuan" then
-        -- print("替换位夕弦")
         room:changeHero(player, "yz_xixuan")
       else
-        -- print("替换位耶俱矢")
         room:changeHero(player, "yz_yejushi")
       end
-      
     end
   end
 }
@@ -981,10 +966,6 @@ local yz_bawu_fenli_dy=fk.CreateTriggerSkill{
 }
 yz_bawu_fenli:addRelatedSkill(yz_bawu_fenli_dy)
 -- 八舞耶俱矢
--- 贯穿	锁定技，当你使用【杀】造成伤害后，你对其下家造成x点伤害。（X为此【杀】造成的伤害数）
--- 自傲	当你使用【杀】对目标角色造成伤害时，你可以令其选择一项：
--- 		1、令此伤害+1，然后其可以获得你一张手牌；
--- 		2、你弃置其一张手牌。
 local yz_yejushi=General:new(extension,"yz_yejushi","god",2,2,General.Female)
 Fk:loadTranslationTable{
   ["yz_yejushi"] = "八舞耶俱矢",
@@ -995,15 +976,12 @@ Fk:loadTranslationTable{
   -- 技能翻译
   ["yz_yejushi_guanchaun"] ="贯穿",
   [":yz_yejushi_guanchaun"]="锁定技，当你使用【杀】造成伤害后，你对其下家造成x点伤害。（X为此【杀】造成的伤害数）",
-
   ["yz_yejushi_ziao"] ="自傲",
   [":yz_yejushi_ziao"]="当你使用【杀】对目标角色造成伤害时，你可以令其选择一项：1、令此伤害+1，然后其可以获得你一张手牌；2、你弃置其一张手牌。",
   ["yz_yejushi_ziao_choose_1"]="受到伤害+1，获得其一张手牌",
   ["yz_yejushi_ziao_choose_2"]="弃置其一张手牌",
   }
 -- 创建技能
-
--- 贯穿	锁定技，当你使用【杀】造成伤害后，你对其下家造成x点伤害。（X为此【杀】造成的伤害数）
 local yz_yejushi_guanchaun=fk.CreateTriggerSkill{
   name="yz_yejushi_guanchaun",
   frequency = Skill.Compulsory,
@@ -1031,9 +1009,6 @@ local yz_yejushi_guanchaun=fk.CreateTriggerSkill{
     
   end
 }
--- 自傲	当你使用【杀】对目标角色造成伤害时，你可以令其选择一项：
--- 		1、令此伤害+1，然后其可以获得你一张手牌；
--- 		2、你弃置其一张手牌。
 local yz_yejushi_ziao =fk.CreateTriggerSkill{
   name="yz_yejushi_ziao",
   -- frequency = Skill.Frequent,
@@ -1068,9 +1043,6 @@ yz_yejushi:addSkill(yz_yejushi_guanchaun)
 yz_yejushi:addSkill(yz_yejushi_ziao)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 八舞夕弦	
--- 束缚	每当你受到一点伤害或失去一点体力后，你可以选择一名角色，其计算与其它角色的距离+1。
--- 手足	锁定技，回合开始时，你失去一点体力。当你使用【杀】造成伤害后，你回复X点体力（X为此【杀】造成的伤害数）
--- 疾驰	出牌阶段你使用【杀】的次数上限+1。你进入濒死状态时，可以视为对一名玩家使用一张无距离限制的【杀】。
 local yz_xixuan=General:new(extension,"yz_xixuan","god",2,2,General.Female)
 Fk:loadTranslationTable{
   ["yz_xixuan"] = "八舞夕弦",
@@ -1093,9 +1065,7 @@ Fk:loadTranslationTable{
   [":yz_xixuan_jichi"]= "出牌阶段你使用【杀】的次数上限+1。你进入濒死状态时，可以视为对一名玩家使用一张无距离限制的【杀】",
   ["#yz_xixuan_jichi_sha"] = "疾驰"
 }
--- 创建技能
--- 计算距离+1未测试
--- 束缚	每当你受到一点伤害或失去一点体力后，你可以选择一名角色，其计算与其它角色的距离+1。
+
 local yz_xixuan_shufu=fk.CreateTriggerSkill{
   name="yz_xixuan_shufu",
   events={fk.Damaged,fk.HpLost},
@@ -1128,7 +1098,6 @@ local yz_xixuan_shufu_target=fk.CreateDistanceSkill{
   end,
 }
 yz_xixuan_shufu:addRelatedSkill(yz_xixuan_shufu_target)
--- 手足	锁定技，回合开始时，你失去一点体力。当你使用【杀】造成伤害后，你回复X点体力（X为此【杀】造成的伤害数）
 local yz_xixuan_shouzu=fk.CreateTriggerSkill{
   name="yz_xixuan_shouzu",
   frequency=Skill.Compulsory,
@@ -1169,8 +1138,6 @@ local yz_xixuan_shouzu_sha=fk.CreateTriggerSkill{
     }
   end
 }
--- 疾驰	出牌阶段你使用【杀】的次数上限+1。你进入濒死状态时，可以视为对一名玩家使用一张无距离限制的【杀】。
--- 濒死出牌？理解不能
 local yz_xixuan_jichi_sha=fk.CreateTargetModSkill{
   name = "#yz_xixuan_jichi_sha",
   frequency = Skill.Compulsory,
@@ -1223,13 +1190,6 @@ yz_jejushi_xixuan:addSkill(yz_bawu_fenli)
 -- 风侍八舞
 ---------------------------------------------------------------------------------------------------------------------------------------
 -- 诱宵美九
--- 独奏	出牌阶段限一次，你可以弃置至多x+1张手牌，并选择至多x名女性角色和一名男性角色，前者分别选择一项：
--- 1、视为对后者使用一张【决斗】；
--- 2、视为对后者使用一张无距离限制的【杀】。（x为你的当前体力值）若如此做，你翻面。
--- 百合	结束阶段，你可以令本回合造成过伤害的女性角色选择一项：
--- 		1、摸一张牌；
--- 		2、令你摸一张牌；
--- 		3、令你回复一点体力，然后弃一张牌。
 local yz_meijiu=General:new(extension,"yz_meijiu","god",2,3,General.Female)
 Fk:loadTranslationTable{
   ["yz_meijiu"] = "诱宵美九",
@@ -1242,7 +1202,8 @@ Fk:loadTranslationTable{
   [":yz_meijiu_duzou"]="出牌阶段限一次，你可以弃置至多x+1张手牌，并选择至多x名女性角色和一名男性角色，前者分别选择一项：<br>"..
                        "1、视为对后者使用一张【决斗】；<br>"..
                        "2、视为对后者使用一张无距离限制的【杀】。若如此做，你翻面。（x为你的当前体力值）",
-
+  ["yz_meijiu_duzou_1"]="对其使用决斗",
+  ["yz_meijiu_duzou_2"]="对其使用无距离限制的【杀】",
   ["yz_meijiu_baihe"]="百合",
   ["#yz_meijiu_baihe_getbai"]="百合·令",
   ["#yz_meijiu_baihe_clearbai"]="百合·解",
@@ -1263,9 +1224,10 @@ local yz_meijiu_duzou=fk.CreateActiveSkill{
       return player:hasSkill(self.name)
              and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
              and player.phase == Player.Play
+             and not player:isKongcheng()
     end,
-    card_filter=function (self, to_select, selected, selected_targets)
-      return #selected  <= Self.hp+1
+    card_filter = function(self, to_select, selected)
+      return #selected < Self.hp+1 and Fk:currentRoom():getCardArea(to_select) == Player.Hand and not Self:prohibitDiscard(Fk:getCardById(to_select))
     end,
     card_num=1,
     target_num=1,
@@ -1275,17 +1237,38 @@ local yz_meijiu_duzou=fk.CreateActiveSkill{
     on_use=function (self, room, data)
       local cards=data.cards
       local x=#cards
-      local from=room:getPlayerById(data.from)
+      local player=room:getPlayerById(data.from)
       local target=room:getPlayerById(data.tos[1])
-      room:throwCard(cards,self.name,from,from)
+      room:throwCard(cards,self.name,player,player)
+      local alivePlayers=room:getAlivePlayers()
+      local males={}
+      local choose={"yz_meijiu_duzou_1","yz_meijiu_duzou_2"}
+      for index, alivePlayer in ipairs(alivePlayers) do
+        if alivePlayer.gender==General.Female then
+          table.insert(males,alivePlayer.id)
+        end
+      end
+      local juedou=Fk:cloneCard("duel")
+      local sha=Fk:cloneCard("slash")
+      local male=room:askForChoosePlayers(player,males,1,x,self.name..":最多挑选"..x.."名女角色",self.name,true)
+      for index, toid in ipairs(male) do
+        local to=room:getPlayerById(toid)
+        local selected=room:askForChoice(to,choose,self.name,self.name..":选择对被选中的男性角色做出",false,choose)
+        if selected=="yz_meijiu_duzou_1" then
+          room:useCard({from=to.id,tos={{target.id}},card=juedou})
+        elseif selected=="yz_meijiu_duzou_2" then
+          room:useCard({from=to.id,tos={{target.id}},card=sha})
+        end
+      end
     end
 }
 local yz_meijiu_baihe=fk.CreateTriggerSkill{
     name="yz_meijiu_baihe",
-    events={fk.EventPhaseEnd},
+    events={fk.EventPhaseStart},
     can_trigger=function (self, event, target, player, data)
       return player:hasSkill(self.name)
              and target:getMark("@yz_meijiu_bai") > 0
+             and target.phase == Player.Finish
     end,
     on_cost=function (self, event, target, player, data)
       local room =player.room
@@ -1293,7 +1276,7 @@ local yz_meijiu_baihe=fk.CreateTriggerSkill{
       if #player:getCardIds()>0 then
         choose={"yz_meijiu_baihe_choose1","yz_meijiu_baihe_choose2","yz_meijiu_baihe_choose3","cancel"}
       end
-      local selected=room:askForChoice(player,choose,self.name,"",false,choose)
+      local selected=room:askForChoice(target,choose,self.name,"",false,choose)
       if selected =="yz_meijiu_baihe_choose1" then
         self.cost_data=1
         return true
@@ -1338,12 +1321,13 @@ local yz_meijiu_baihe_getbai=fk.CreateTriggerSkill{
 }
 local yz_meijiu_baihe_clearbai=fk.CreateTriggerSkill{
   name="#yz_meijiu_baihe_clearbai",
-  events={fk.AfterPhaseEnd},
+  refresh_events={fk.TurnEnd},
   can_refresh =function (self, event, target, player, data)
     return player:hasSkill(self.name)
            and target:getMark("@yz_meijiu_bai")>0
+          --  and  target.phase == Player.Finish 
   end,
-  on_cost=function (self, event, target, player, data)
+  on_refresh=function (self, event, target, player, data)
     local room = player.room
     room:setPlayerMark(target,"@yz_meijiu_bai",0)
   end
@@ -1354,8 +1338,6 @@ yz_meijiu_baihe:addRelatedSkill(yz_meijiu_baihe_clearbai)
 yz_meijiu:addSkill(yz_meijiu_baihe)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 夜刀神十香
--- 鏖杀	当你使用【杀】选择目标后，你可以令一名距离为1的角色也成为此【杀】的目标。当你使用【杀】指定唯一目标后，若该角色与你距离为1，你可以令此【杀】造成的伤害+1。
--- 王胃	锁定技，当你成为一名角色使用【杀】和【桃】的目标后，该角色选择一项：1.弃置一张牌；2.令此牌对你无效。
 local yz_shixiang=General:new(extension,"yz_shixiang","god",4,4,General.Female)
 Fk:loadTranslationTable{
   ["yz_shixiang"] = "夜刀神十香",
@@ -1370,12 +1352,12 @@ Fk:loadTranslationTable{
   ["yz_shixiang_aosha_choose"] ="选择一名额外玩家",
 
   ["yz_shixiang_wangwei"]="王胃",
-  [":yz_shixiang_wangwei"]="锁定技，当你成为一名角色使用【杀】和【桃】的目标后，该角色选择一项：1.弃置一张牌；2.令此牌对你无效。",
+  [":yz_shixiang_wangwei"]="锁定技，当你成为一名角色使用【杀】和【桃】的目标后，该角色选择一项：<br>"..
+                           "1.弃置一张牌；<br>"..
+                           "2.令此牌对你无效。",
   ["yz_shixiang_wangwei_choose1"]="弃置一张牌",
   ["yz_shixiang_wangwei_choose2"]="令此无效",
 }
--- 创建技能
--- 鏖杀  未完整测试
 local yz_shixiang_aosha=fk.CreateTriggerSkill{
   name="yz_shixiang_aosha",
   events={fk.TargetSpecified},
@@ -1405,7 +1387,6 @@ local yz_shixiang_aosha=fk.CreateTriggerSkill{
     end
   end
 }
--- 王胃	锁定技，当你成为一名角色使用【杀】和【桃】的目标后，该角色选择一项：1.弃置一张牌；2.令此牌对你无效。
 local yz_shixiang_wangwei=fk.CreateTriggerSkill{
   name="yz_shixiang_wangwei",
   frequency=Skill.Compulsory,
@@ -1455,8 +1436,6 @@ Fk:loadTranslationTable{
   ["#yz_wuheshidao_jianren_success"] = " %to 【坚韧】判定成功，回复血量并获得一张牌",
   ["#yz_wuheshidao_jianren_fail"] = " %to 【坚韧】判定失败"
 }
--- 创建技能
--- 封印   尚不确定封印技能是否生效
 local yz_wuheshidao_fengyin=fk.CreateActiveSkill{
   name="yz_wuheshidao_fengyin",
   can_use =function (self,player)
@@ -1493,7 +1472,6 @@ local yz_wuheshidao_fengyin=fk.CreateActiveSkill{
     end
   end
 }
--- 创建技能 坚韧:(锁定技)进入濒死状态时进行判定，锦囊牌回复一点体力摸一张牌  
 local yz_wuheshidao_jianren=fk.CreateTriggerSkill{
   name="yz_wuheshidao_jianren",
   anim_type = "defensive",
@@ -1554,8 +1532,6 @@ Fk:loadTranslationTable{
   [":yz_shizhi_liaoli"] = "每轮限一次，出牌阶段，你可以把一张手牌当作[五谷丰登]对任意名角色使用。若你选择的角色数不少于x(x为场上角色数)，在此[五谷丰登]结算结束后你可以令这些角色各回复一点体力。",
   ["#yz_shizhi_liaoli_result"] = " %to 发动技能【料理】判定效果，全体血量+1",
 }
--- 创建技能 视为技  把任意一张牌视为五谷丰登
--- 1.视为技能版
 local yz_shizhi_liaoli=fk.CreateViewAsSkill{
   name = "yz_shizhi_liaoli",
   pattern = ".",
@@ -1601,7 +1577,6 @@ local yz_shizhi_liaoli=fk.CreateViewAsSkill{
     if #use.tos == #room.alive_players then
       for index,playerList in ipairs(use.tos) do
         for index, player in ipairs(playerList) do
-          -- room:notifySkillInvoked(room:getPlayerById(player),"yz_wuheshidao_fengyin","special")
           room:recover{
           who =room:getPlayerById(player) ,
           num = 1,
@@ -1618,7 +1593,6 @@ local yz_shizhi_liaoli=fk.CreateViewAsSkill{
 }
 -- 添加技能
 yz_shizhi:addSkill(yz_shizhi_liaoli)
-
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 尼别科尔
 local yz_nibie=General:new(extension,"yz_nibie","god",2,2,General.Female)
@@ -1639,8 +1613,6 @@ Fk:loadTranslationTable{
   ["yz_yaku_nibie_ruyi"]="如一",
   [":yz_yaku_nibie_ruyi"]="当你失去任意区域的最后一张牌时，你摸一张牌，那之后，你可以弃置自己其他任意区域内的一张牌。",
 }
--- 纸铠	游戏开始时，你调整体力上限至X点，并回复一点体力（X为你的体力值与体力上限最高的角色的差值）
--- 如一	当你失去任意区域的最后一张牌时，你摸一张牌，那之后，你可以弃置自己其他任意区域内的一张牌。
 local yz_yaku_nibie_zhikai=fk.CreateTriggerSkill{
   name="yz_yaku_nibie_zhikai",
   events={fk.GameStart},
@@ -1719,10 +1691,6 @@ Fk:loadTranslationTable{
  ["@yz_ling_yuesu"]="约束",
                     
 }
--- 零番	持恒技，每轮开始时，你可以选择一名角色，若如此做，你令该角色获得一枚「结晶」标记。
--- 你对拥有「结晶」标记的其他角色造成伤害时，你获得一个「结晶」标记。
--- 当有「结晶」标记的其他角色死亡时，若你拥有「结晶」标记，你可以移去场上所有「结晶」标记，获得其所有牌然后声明其武将牌上的任意个技能，你视为拥有这些技能。
--- 每轮结束时，若场上存在「结晶」标记，你失去一点体力并减一点体力上限，然后你移去场上所有「结晶」标记。
 local yz_ling_zero=fk.CreateTriggerSkill{
   name="yz_ling_zero",
   frequency=Skill.Compulsory,
@@ -2056,10 +2024,6 @@ yz_linxu:addSkill(yz_linxu_qiri)
 yz_linxu:addSkill("yz_linmi_lunhui")
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 鞠亚&鞠奈
--- 一体	锁定技，游戏开始时，你选择一项：
--- 		1、用或守鞠亚替换你的武将牌；
--- 		2、用或守鞠奈替换你的武将牌。
--- 		当你造成伤害后，你用或守鞠奈替换你的武将牌。当你受到伤害后，你用或守鞠亚替换你的武将牌。
 local  yz_juya_junai_yiti=fk.CreateTriggerSkill{
   name="yz_juya_junai_yiti",
   events ={fk.GameStart,fk.Damage,fk.Damaged},
@@ -2110,13 +2074,6 @@ Fk:loadTranslationTable{
 yz_juya_junai:addSkill(yz_juya_junai_yiti)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 或守鞠亚
--- 释爱	出牌阶段，你可以弃置一张【桃】，视为对一名其他角色使用了一张【桃】。你使用【桃】的回复值+1。
--- 荐选	你可以与一名其它角色拼点，没赢的角色选择一项：
--- 		1.赢的角色回复一点体力；
--- 		2.赢的角色对没赢的角色造成一点伤害；
--- 		3.赢的角色获得拼点的两张牌；
--- 		4.弃置两张牌。
-
 local yz_juya=General:new(extension,"yz_juya","god",3,3,General.Female)
 Fk:loadTranslationTable{
   ["yz_juya"] = "或守鞠亚",
@@ -2162,7 +2119,6 @@ local yz_juya_shiai=fk.CreateTriggerSkill{
            and player.phase == Player.Play
            and peachNum > 0
            and player:usedSkillTimes(self.name, Player.HistoryPhase) == 0
-          
   end,
   on_use =function (self, event, target, player, data)
     local room=player.room   
@@ -2198,10 +2154,6 @@ local yz_juya_shiai_ai=fk.CreateTriggerSkill{
   end
 
 }
--- local yz_juya_shiai_ai=fk.CreateTargetModSkill{
---   name="#yz_juya_shiai_ai",
-
--- }
 local yz_juya_jianxuan=fk.CreateActiveSkill{
   name="yz_juya_jianxuan",
   can_use =function (self, player, card, extra_data)
@@ -2276,8 +2228,6 @@ yz_juya:addSkill(yz_juya_shiai)
 yz_juya:addSkill(yz_juya_junai_yiti)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 或守鞠奈	
--- 湮灭	当你造成伤害后，若其因此进入濒死状态，你令除你和其以外的角色不能对其使用【桃】直到此次濒死结算结束。
--- 反叛	出牌阶段限一次，你的【杀】可以额外指定一名体力值大于你的角色为目标。
 local yz_junai=General:new(extension,"yz_junai","god",3,3,General.Female)
 Fk:loadTranslationTable{
   ["yz_junai"] = "或守鞠奈",
@@ -2293,8 +2243,6 @@ Fk:loadTranslationTable{
   ["yz_junai_fanpan"]="反叛",
   [":yz_junai_fanpan"]="出牌阶段限一次，你的【杀】可以额外指定一名体力值大于你的角色为目标。",
 }
--- 当你造成伤害后，若其因此进入濒死状态，你令除你和其以外的角色不能对其使用【桃】直到此次濒死结算结束。
--- 可以用取消目标做
 local yz_junai_yanmie=fk.CreateTriggerSkill{
   name="yz_junai_yanmie",
   -- events={fk.Damage},
@@ -2366,10 +2314,6 @@ yz_junai:addSkill(yz_junai_yanmie)
 yz_junai:addSkill(yz_juya_junai_yiti)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 万由里
--- 雷霆 出牌阶段开始时，你可以将一张手牌当无距离限制且不计入次数的雷【杀】打出。
--- 你使用非转化的雷【杀】无次数限制且可以多指定至多2个目标。
--- 当你受到雷电伤害时，你可以阻止此伤害。
--- 大凶 当其他男性角色令你脱离濒死状态后，你可以令其选择是否减少一点体力上限并获得技能【雷霆】。若如此做，你死亡。
 local yz_wanyouli=General:new(extension,"yz_wanyouli","god",2,2,General.Female)
 Fk:loadTranslationTable{
   ["yz_wanyouli"] = "万由里",
@@ -2523,6 +2467,130 @@ yz_wanyouli_leiting:addRelatedSkill(yz_wanyouli_leiting_mianyi)
 yz_wanyouli_daxiong:addRelatedSkill(yz_wanyouli_daxiong_gethp)
 yz_wanyouli:addSkill(yz_wanyouli_leiting)
 yz_wanyouli:addSkill(yz_wanyouli_daxiong)
+-- 莲			堕天使				3/3
+
+local yz_lian=General:new(extension,"yz_lian","god",3,3,General.Female)
+Fk:loadTranslationTable{
+  ["yz_lian"] = "莲",
+  ["#yz_lian"] = "堕天使	",
+  ["designer:yz_lian"] = "",
+  ["cv:yz_lian"] = "ai配的",
+  ["illustrator:yz_lian"] = "",
+  ["yz_lian_tandu"]="瘴毒",
+  ["#yz_lian_tandu_use"]="瘴毒·毒发",
+  [":yz_lian_tandu"]="当你受到1点伤害后，你可以摸一张牌，然后你将一张手牌置于伤害来源的武将牌上，称为「毒」。"..
+                     "当其他角色于使用手牌时，你可以移去其武将牌上一张牌名相同的「毒」，然后此牌无效，你摸两张牌。",
+  ["yz_lian_dushen"]="渎神",
+  [":yz_lian_dushen"]="当你进入濒死状态时，你可以选择一项:<br>"..
+                     " 1、移去场上两张「毒」，然后你回复一点体力；<br>"..
+                     " 2、进行一次判定，如果结果为♥️，你获得判定牌，然后你回复一点体力。",
+  ["yz_lian_dushen_1"]="移去场上两张「毒」，回复一点体力",     
+  ["yz_lian_dushen_2"]="进行判定",    
+  ["cencle"]="取消",
+  ["@yz_lian_du"]="毒"
+}
+local yz_lian_tandu=fk.CreateTriggerSkill{
+  name="yz_lian_tandu",
+  events={fk.Damaged},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name)
+          --  and data.Damage
+           and data.from ~=player
+           and target == player
+  end,
+  on_use=function (self, event, target, player, data)
+    local room =player.room
+    local to=data.from
+    player:drawCards(1,self.name,"top")
+    local cardIds=room:askForCardChosen(player,player,"h",self.name)
+    to:addToPile("@yz_lian_du",cardIds,true,self.name)
+  end
+}
+local yz_lian_tandu_use=fk.CreateTriggerSkill{
+  name="#yz_lian_tandu_use",
+  events={fk.CardUsing},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name)
+           and data.from ~=player.id
+           and #target:getPile("@yz_lian_du") > 0
+  end,
+  on_use=function (self, event, target, player, data)
+    local room =player.room
+    local flag={}
+    flag.card_data ={{"@yz_lian_du",target:getPile("@yz_lian_du")}}
+    local cardIds=room:askForCardsChosen(player,target,1,1,flag,self.name,"yz_jingyou_kai_dis")
+    room:throwCard(cardIds,self.name,target,player)
+    data.nullifiedTargets = table.map(player.room.alive_players, Util.IdMapper)
+    player:drawCards(2,self.name,"top")
+  end
+}
+local yz_lian_dushen=fk.CreateTriggerSkill{
+  name="yz_lian_dushen",
+  events={fk.EnterDying},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name)
+           and target == player
+  end,
+  on_cost=function (self, event, target, player, data)
+    local room =player.room
+    local choose={}
+    local t=0
+    local otherPlayers=room:getOtherPlayers(player)
+    for index, otherPlayer in ipairs(otherPlayers) do
+      if #otherPlayer:getPile("@yz_lian_du") >=2 then
+        t = t + 1
+      end
+    end
+    if t>0 then
+       choose={"yz_lian_dushen_1","yz_lian_dushen_2","cencle"}
+    else
+      choose={"yz_lian_dushen_2","cencle"}
+    end
+    local selected=room:askForChoice(player,choose,self.name,self.name..":选择一项",false,choose)
+    if selected=="yz_lian_dushen_1" then
+        self.cost_data=1
+        return true
+    elseif selected=="yz_lian_dushen_2" then
+      self.cost_data=2
+      return true
+    elseif selected=="cencle" then
+      return false
+    end
+  end,
+  on_use=function (self, event, target, player, data)
+    local room =player.room
+    if self.cost_data==1 then
+      local flag={}
+      flag.card_data ={{"@yz_lian_du",target:getPile("@yz_lian_du")}}
+      local cardIds=room:askForCardsChosen(player,target,2,2,flag,self.name,"yz_jingyou_kai_dis")
+      room:throwCard(cardIds,self.name,target,player)
+      room:recover{
+        who=player,
+        num=1,
+        from=player,
+        skillName=self.name
+      }
+    elseif self.cost_data==2 then
+      local judge = {
+        who = player,
+        reason = self.name,
+        pattern = ".",
+      }
+      room:judge(judge)
+      if judge.card and judge.card.suit==Card.Heart then
+        room:recover{
+          who=player,
+          num=1,
+          from=player,
+          skillName=self.name
+        }
+      end
+    end
+  end
+}
+yz_lian_tandu:addRelatedSkill(yz_lian_tandu_use)
+yz_lian:addSkill(yz_lian_tandu)
+yz_lian:addSkill(yz_lian_dushen)
 -- 同人精灵----------------------------------------------------------------------
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 忆纭梦
@@ -2626,13 +2694,11 @@ local yz_jingyou_kaigu=fk.CreateTriggerSkill{
     return player.dying == false
            and player:hasSkill(self.name)
            and data.card.trueName == "peach"
-          --  and target == player
   end,
   on_use =function (self, event, target, player, data)
     AimGroup:cancelTarget(data, player.id)
   end
 }
--- 失去体力时获得凯
 local yz_jingyou_kaigu_lostHP=fk.CreateTriggerSkill{
   name="#yz_jingyou_kaigu_lostHP",
   events={fk.Damaged,fk.HpLost},
@@ -2642,21 +2708,17 @@ local yz_jingyou_kaigu_lostHP=fk.CreateTriggerSkill{
   end,
   on_use =function (self, event, target, player, data)
     local room =player.room
-    -- room:addPlayerMark(player,"@yz_jingyou_kai",1)
     local card =room:drawCards(player,1,self.name,"top",{"@yz_jingyou_kai"})
     player:addToPile("@yz_jingyou_kai",card,true,self.name)
-    -- print(#player:getPile("@yz_jingyou_kai")) 
     room:addPlayerMark(player,"@yz_jingyou_kai_cards",1)
   end
 }
--- 根据凯增加手牌上限
 local yz_jingyou_kaigu_maxcards = fk.CreateMaxCardsSkill{
   name = "#yz_jingyou_kaigu_maxcards",
   correct_func = function(self, player)
     return player:getMark("@yz_jingyou_kai_cards")
   end,
 }
--- 濒死时
 local yz_jingyou_kaigu_dying=fk.CreateTriggerSkill{
   name="#yz_jingyou_kaigu_dying",
   events={fk.EnterDying},
@@ -2680,10 +2742,6 @@ local yz_jingyou_kaigu_dying=fk.CreateTriggerSkill{
     end
   end
 }
--- 瘴毒	任意角色回合开始时，你可以将一张“铠”交给当前回合的角色，并令其选择一项：
--- 		1、送三张牌给镜优；
--- 		2、送一张牌给镜优，武将牌翻面；
--- 		3、跳过本回合的出牌阶段和弃牌阶段。
 local yz_jingyou_tandu=fk.CreateTriggerSkill{
   name="yz_jingyou_tandu",
   events={fk.TurnStart},
@@ -2731,9 +2789,6 @@ local yz_jingyou_tandu=fk.CreateTriggerSkill{
     end
  end
 }
--- 入梦	出牌阶段限一次，你可以选择一项：
--- 		1、用任意张手牌替换等量的“铠”；
--- 		2、将至多两张手牌置于你的武将牌上，称为“铠”。
 local yz_jingyou_rumeng=fk.CreateTriggerSkill{
   name="yz_jingyou_rumeng",
   events={fk.EventPhaseStart},
@@ -3016,11 +3071,6 @@ yz_ming:addSkill(yz_ming_shenai)
 yz_ming:addSkill(yz_ming_xianhui)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 真夜
--- 勇猛	当你使用【杀】指定一名角色为目标后，你可以进行一次判定，若结果为♠️，其不能使用【闪】响应此【杀】。
--- 聪慧	锁定技，当你使用锦囊牌指定目标时，你需进行判定：
--- 		若结果为红色，你令此牌无效；
--- 		若为♠️2~9，当此牌结算结束后置入弃牌堆时，你可以获得之。
--- 缠斗	当你成为装备区里有武器牌的其他角色使用【杀】的目标时，你可以进行判定，若结果为红色，你回复一点体力，然后弃置其装备区内的武器牌。
 local yz_zhenye=General:new(extension,"yz_zhenye","god",6,6,General.Female)
 Fk:loadTranslationTable{
   ["yz_zhenye"] = "饕神真夜",
@@ -3058,7 +3108,7 @@ local yz_zhenye_yongmeng=fk.CreateTriggerSkill{
       }
       room:judge(judge)
       if judge.card and judge.card.suit == Card.Spade then
-        data.disresponsive = true
+        data.disresponsiveList = table.map(player.room.alive_players, Util.IdMapper)
         break
       else 
         break
@@ -3066,7 +3116,6 @@ local yz_zhenye_yongmeng=fk.CreateTriggerSkill{
     end
   end
 }
-
 local yz_zhenye_conghui=fk.CreateTriggerSkill{
   name="yz_zhenye_conghui",
   frequency=Skill.Compulsory,
@@ -3158,7 +3207,10 @@ local yz_zhenye_chandou=fk.CreateTriggerSkill{
     }
     local from=room:getPlayerById(data.from) 
     local discard=room:askForCardChosen(from,player,"e",self.name,self.name..":弃置一张装备牌")
-    room:throwCard(discard,self.name,from)
+    if #discard>0 then
+      room:throwCard(discard,self.name,from)
+    end
+    
   end
 }
 yz_zhenye_conghui:addRelatedSkill(yz_zhenye_conghui_getcard)
@@ -3401,13 +3453,6 @@ yz_bainiao:addSkill(yz_bainiao_yazhi)
 yz_bainiao:addSkill(yz_bainiao_yazhi_ranhui)
 -------------------------------------------------------------------------------------------------------------------------------------
 -- 星铭千愿
--- 剡若	出牌阶段限一次，你可以失去一点体力，若如此做，你令你使用的下一张【杀】造成的伤害+1。
--- 灵佑	锁定技，若你的装备区里没有防具牌， ♣️【杀】对你无效。
--- 银羽	出牌阶段限一次，你可以进行一次判定，若结果为黑色，直到回合结束你使用【杀】无距离限制。
--- 苍穹	出牌阶段限一次，你可以弃置两张手牌，观看一名其他角色的手牌，若如此做，你可以选择一项：
--- 		1、你回复一点体力；
--- 		2、该角色回复一点体力。
--- 光启	限定技，出牌阶段，你可以增加两点体力上限并回复两点体力，下个你的回合的结束阶段，你将你的体力值调整至1。
 local yz_qianyuan=General:new(extension,"yz_qianyuan","god",3,3,General.Female)
 Fk:loadTranslationTable{
   ["yz_qianyuan"] = "星铭千愿",
@@ -3651,5 +3696,155 @@ Fk:loadTranslationTable{
   ["designer:yz_liying"] = "抱住玩偶的希儿",
   ["cv:yz_liying"] = "Ai配的",
   ["illustrator:yz_liying"] = "",
+  -- 
+  ["yz_liying_tianyi"]="天翼",
+  [":yz_liying_tianyi"]="锁定技，你计算与其他角色的距离视为1。",
+  ["yz_liying_liancheng"]="炼成",
+  [":yz_liying_liancheng"]="当一名角色于其回合内受到伤害或者失去体力后，你可以令其选择一项：<br>"..
+                           "1、摸一张牌；<br>"..
+                           "2、视为使用了一张【酒】。",
+  ["yz_liying_liancheng_1"]="摸一张牌",
+  ["yz_liying_liancheng_2"]="使用【酒】",
+  ["cencle"]="取消",
+  ["yz_liying_miuhuan"]="缪环",
+  ["#yz_liying_miuhuan_get"]="缪环",
+  [":yz_liying_miuhuan"]="弃牌阶段弃置手牌后，你获得x枚「缪环」标记（x为弃置的手牌数）。你最多拥有3枚「缪环」标记。"..
+                         "出牌阶段，你可以移去一枚「缪环」标记，令一名角色摸一张牌。",
+  ["yz_liying_zhinao"]="智脑",
+  ["#yz_liying_zhinao_getsha"]="智脑",
+  [":yz_liying_zhinao"]="当你成为【杀】的目标时，你可以进行一次判定，若结果为红色，该【杀】对你无效。"..
+                        "其他角色的出牌阶段开始时，你可以弃置一张手牌，并令其从牌堆中获得一张【杀】。",
+
+  ["@yz_liying_miuhuan_mark"]="缪环"
 }
+local yz_liying_liancheng=fk.CreateTriggerSkill{
+  name="yz_liying_liancheng",
+  events={fk.Damaged,fk.HpLost},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name)
+  end,
+  on_cost=function (self, event, target, player, data)
+    local room=player.room
+    local choose={"yz_liying_liancheng_1","yz_liying_liancheng_2","cencle"}
+    local selected=room:askForChoice(target,choose,self.name,self.name..":选择效果",false,choose)
+    if selected=="yz_liying_liancheng_1" then
+      self.cost_data=1
+      return true
+    elseif selected=="yz_liying_liancheng_2" then
+      self.cost_data=2
+      return true
+    elseif selected=="cencle" then
+      return false
+    end
+  end,
+  on_use=function (self, event, target, player, data)
+    local room=player.room
+    if self.cost_data == 1 then
+      target:drawCards(1,self.name,"top")
+    elseif self.cost_data == 2 then  
+      local card= Fk:cloneCard("analeptic")
+      room:useCard({from=player.id,tos={{target.id}},card=card})
+    end
+  end
+}
+local yz_liying_miuhuan_get=fk.CreateTriggerSkill{
+  name="#yz_liying_miuhuan_get",
+  events={fk.AfterCardsMove},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name)
+          --  and target ==player
+           and player.phase==Player.Discard
+  end,
+  on_lose=function (self, player, is_death)
+    return true
+  end,
+  on_use=function (self, event, target, player, data)
+    local room = player.room
+    local n = 0
+    local miuhuan=player:getMark("@yz_liying_miuhuan_mark")
+    for _, move in ipairs(data) do
+      if move.from == player.id and move.moveReason == fk.ReasonDiscard then
+        for _, info in ipairs(move.moveInfo) do
+          if info.fromArea == Card.PlayerHand then
+            n = n + 1
+          end
+        end
+      end
+    end
+    if miuhuan+n<=3 then
+      room:setPlayerMark(player, "@yz_liying_miuhuan_mark", miuhuan+n)
+    elseif miuhuan+n>3 then
+      room:setPlayerMark(player, "@yz_liying_miuhuan_mark",3)
+    -- elseif miuhuan+n > 3 then
+    --   room:addPlayerMark(player, "@yz_liying_miuhuan_mark",3)
+    end
+  end
+}
+local yz_liying_miuhuan=fk.CreateActiveSkill{
+  name="yz_liying_miuhuan",
+  can_use=function (self, player, card, extra_data)
+    return player:getMark("@yz_liying_miuhuan_mark")>0
+  end,
+  target_num=1,
+  target_filter=function (self, to_select, selected, selected_cards, card, extra_data)
+    return #selected == 0 and #Fk:currentRoom():getPlayerById(to_select)  
+  end,
+  on_use=function (self, room, data)
+    local from=room:getPlayerById(data.from)
+    local to=room:getPlayerById(data.tos[1])
+    room:removePlayerMark(from,"@yz_liying_miuhuan_mark",1)
+    to:drawCards(1,self.name,"top")
+  end
+}
+local yz_liying_zhinao=fk.CreateTriggerSkill{
+  name="yz_liying_zhinao",
+  events={fk.TargetConfirmed},
+  can_trigger=function (self, event, target, player, data)
+    return player:hasSkill(self.name)
+           and target == player
+           and data.card
+           and data.card.name == "slash"
+  end,
+  on_cost=function (self, event, target, player, data)
+    local room =player.room
+    local judge = {
+      who = player,
+      reason = self.name,
+      pattern = ".",
+    }
+    room:judge(judge)
+    if judge.card and judge.card.color == Card.Red then
+      return true
+    end
+  end,
+  on_use=function (self, event, target, player, data)
+    AimGroup:cancelTarget(data,player.id)
+  end
+}
+local yz_liying_zhinao_getsha=fk.CreateTriggerSkill{
+  name="#yz_liying_zhinao_getsha",
+  events={fk.EventPhaseStart},
+  can_trigger =function (self, event, target, player, data)
+    return player:hasSkill(self.name)
+           and target ~=player
+           and target.phase == Player.Play
+           and not player:isKongcheng()
+  end,
+  on_use=function (self, event, target, player, data)
+    local room =player.room
+    local discard=room:askForDiscard(player,1,1,false,self.name,false)
+    print("111")
+    local sha= room:getCardsFromPileByRule("slash",1,"allPiles")
+    if #sha>0 then
+      room:obtainCard(target,sha[1],true)
+    end
+    
+  end
+}
+yz_liying_miuhuan:addRelatedSkill(yz_liying_miuhuan_get)
+yz_liying_zhinao:addRelatedSkill(yz_liying_zhinao_getsha)
+yz_liying:addSkill(zz_tianyi)
+yz_liying:addSkill(yz_liying_liancheng)
+yz_liying:addSkill(yz_liying_miuhuan)
+yz_liying:addSkill(yz_liying_zhinao)
 return extension
