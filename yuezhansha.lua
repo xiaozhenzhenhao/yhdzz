@@ -69,11 +69,9 @@ local zz_rilun = fk.CreateActiveSkill{
   can_use = function(self, player)
     return player:usedSkillTimes(self.name, Player.HistoryGame) == 0
   end,
-  on_cost = function(self, event, target, player, data)
-    return player.room:askForSkillnvoke(player, self.name, nil, {cid})
-  end,
   on_use = function(self, room, effect)
     local player = room:getPlayerById(effect.from)
+    player:throwAllCards("he")
     local targets = room:getOtherPlayers(player, true)
     room:doIndicate(effect.from, table.map(targets, Util.IdMapper))
     table.forEach(targets, function(p)
@@ -549,12 +547,14 @@ local yz_qinli_chifu_plus=fk.CreateTriggerSkill{
     return player:hasSkill(self.name) 
           and target ==player 
           and player:getMark("@yz_qinli_fu")>0
-          and (data.card.name == "fire__slash" or data.card.name =="fire_attack" and data.card.name == "duel")
+          and (data.card.name == "slash" or data.card.name =="fire_attack" or data.card.name == "duel")
   end,
   on_use= function (self, event, target, player, data)
-    -- data.disresponsive = true
+    local room=player.room
+    data.disresponsive = true
     data.disresponsiveList = table.map(player.room.alive_players, Util.IdMapper)
     player:addQinggangTag(data)
+
   end
 }
 local yz_qinli_chifu=fk.CreateTriggerSkill{
@@ -2029,7 +2029,15 @@ local  yz_juya_junai_yiti=fk.CreateTriggerSkill{
   events ={fk.GameStart,fk.Damage,fk.Damaged},
   frequency=Skill.Compulsory,
   can_trigger =function (self, event, target, player, data)
-    return player:hasSkill(self.name)
+    if  event == fk.GameStart then
+       return player:hasSkill(self.name)
+    elseif event == fk.Damage then
+      return player:hasSkill(self.name)
+             and target == player
+    elseif event == fk.Damaged then   
+      return player:hasSkill(self.name)
+             and target == player
+    end 
   end,
   on_use =function (self, event, target, player, data)
     local room =player.room
@@ -2041,12 +2049,12 @@ local  yz_juya_junai_yiti=fk.CreateTriggerSkill{
       elseif selected=="yz_juya_junai_yiti_choose_junai" then
         room:changeHero(player, "yz_junai")
       end
-    elseif event == fk.Damage then
+    elseif event == fk.Damage  then
       local hero= player.general
       if hero=="yz_juya" then
         room:changeHero(player, "yz_junai")
       end
-    elseif event == fk.Damaged then
+    elseif event == fk.Damaged   then
       local hero= player.general
       if hero=="yz_junai" then
         room:changeHero(player, "yz_juya")
@@ -2161,7 +2169,7 @@ local yz_juya_jianxuan=fk.CreateActiveSkill{
   end,
   target_filter = function(self, to_select, selected)
     local target = Fk:currentRoom():getPlayerById(to_select)
-    if #selected < 1 and to_select ~= Self.id and #target:getCardIds()>0 then
+    if #selected < 1 and to_select ~= Self.id and #target:getCardIds()>0 and not Fk.currentRoom():getPlayerById(to_select):isKongcheng() then
       return true
     end
   end,
@@ -3233,12 +3241,13 @@ Fk:loadTranslationTable{
   ["#yz_bainiao_yazhi_mod"]="压制·强化",
   [":yz_bainiao_yazhi"]="摸牌阶段，你可以进行两次判定，然后若你没有「武装」，你可将至多两种不同花色的判定牌置于你的武将牌上，称为「武装」；"..
                         "否则你可以将任意张判定牌替换等量的「武装」。（你最多拥有两张「武装」）<br>"..
-                        "出牌阶段，你可以弃置一张与你拥有的「武装」相花色相同的牌并获得以下效果：<br>"..
+                        "【压制·兵器】: 出牌阶段，你可以弃置一张与你拥有的「武装」相花色相同的牌并获得以下效果：<br>"..
                         "<font color='red'>♥️</font>:你下一次对其他角色造成的伤害+1；【无人机】<br>"..
                         "♦️:你的下一张【杀】无视防具；【激光发射器】<br>"..
                         "♣️:选择一名角色，其技能失效直到回合结束；<br>"..
                         "♠️:你弃置一名角色一张牌；<br>"..
-                        "若你于本回合的出牌阶段内使用过四种花色的牌，你可以对一名角色造成一点伤害，然后本回合此技能失效。",
+                        -- "若你于本回合的出牌阶段内使用过四种花色的牌，你可以对一名角色造成一点伤害，然后本回合此技能失效。<br>"..
+                        "",
   ["yz_bainiao_yazhi_ranhui"]="燃毁",
   ["#yz_bainiao_yazhi_ranhui_dis"]="燃毁·扩大",
   [":yz_bainiao_yazhi_ranhui"]="你的攻击范围+x（X为你已损失的体力值）。"..

@@ -40,7 +40,7 @@ Fk:loadTranslationTable{
   ["illustrator:fgo_paomo"] = "FGO",
 
   ["fgo_paomo_mowang"]="魔王",
-  [":fgo_paomo_aiyu"]="无法成为锦囊牌目标，受到的伤害+1",
+  [":fgo_paomo_aiyu"]="无法成为锦囊牌目标",
   ["fgo_paomo_aiyu"]="爱欲",
   [":fgo_yaolan_longlu"]="出牌阶段开始时，每回合限一次，选择一名玩家，其翻面",
   ["fgo_yaolan_wuxingzhe"]="无形",
